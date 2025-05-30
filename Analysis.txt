@@ -1,0 +1,118 @@
+1. Total number of distinct branches.
+select count(distinct branch)
+from walmart;
+
+2. Types of payment methods used and accepted at Walmart stores.
+select distinct(payment_method)
+from walmart;
+
+3. For different transaction methods, the corresponding number of transactions and number of quantity sold.
+select payment_method,
+        count(*) as total_transactions,
+        sum(quantity) as quantity_sold
+from walmart
+group by 1;
+
+4. Highest-rated category in each branch.
+select branch,
+		category
+from (
+	select branch,
+			category,
+			avg(rating) as avg_rating,
+            rank() over(partition by branch order by branch, avg(rating) desc) as rn
+	from walmart
+	group by 1, 2
+    ) cte
+where rn = 1;
+
+5. Identifying the busiest day for each branch, based on the number of transactions.
+select branch,
+		day
+from (	select branch,
+-- 				str_to_date(date, '%d/%m/%Y') as date,
+				dayname(STR_TO_DATE(date, '%d/%m/%Y')) AS day,
+				COUNT(invoice_id) AS transaction_count,
+				rank() over(partition by branch order by branch, COUNT(invoice_id) desc) as rn
+		FROM walmart
+		GROUP BY 1, 2) cte
+where rn = 1;
+
+6. Determining the average, minimum and maximum rating of category for each city.
+select city,
+		category,
+		round(avg(rating), 1) as avg_rating,
+        min(rating) as min_rating,
+        max(rating) as max_rating
+from walmart
+group by 1, 2
+order by 1;
+
+7. Calculating the total profit for each category, by considering total profit as (unit price x quantity x profit margin). also denoting the transaction counts for each category, determining the popularity of categories.
+select category,
+		count(*) as transaction_count,
+		round(sum(unit_price * quantity * profit_margin), 2) as total_profit,
+		round(avg(unit_price * quantity * profit_margin), 2) as avg_profit
+from walmart
+group by 1;
+
+8. Determining the most common payment method for each branch.
+with cte as (
+	select branch,
+			payment_method,
+			count(*) as count_of_transactions,
+			rank() over(partition by branch order by count(*) desc) as rn
+	from walmart
+	group by 1, 2)
+    
+select branch,
+		payment_method
+from cte
+where rn = 1;
+
+9. Categorizing branch sales in Morning, Afternoon and Evening shifts.
+with shifts as (
+		select invoice_id,
+				branch,
+				case when hour(cast(time as time)) < 12 then 'Morning' 
+					when hour(cast(time as time)) between 12 and 17 then 'Afternoon'
+				else 'Evening' end as time_of_day
+		from walmart
+		)
+
+select branch,
+		time_of_day,
+        count(*) as no_of_sales
+from shifts
+group by 1, 2
+order by 1;
+
+10. Identifying the top 5 branches with highest revenue decrease ratio when compare to last year.
+-- revenue decrease ratio = (previous years revenue - current years revenue) / previous years revenue * 100
+with revenue_2022 as (
+		select branch,
+				sum(total) as tot_revenue
+		from walmart
+		where year(str_to_date(date, '%d/%m/%Y')) = 2022
+		group by 1
+		order by 1
+		),
+
+revenue_2023 as (
+		select branch,
+				sum(total) as tot_revenue
+		from walmart
+		where year(str_to_date(date, '%d/%m/%Y')) = 2023
+		group by 1
+		order by 1
+		)
+
+select r22.branch,
+		r22.tot_revenue as 2022_revenue,
+        r23.tot_revenue as 2023_revennue,
+        round(100.0 * (r22.tot_revenue - r23.tot_revenue) / r22.tot_revenue, 2) as revenue_decrease_ratio
+from revenue_2022 r22
+join revenue_2023 r23
+on r22.branch = r23.branch
+order by 4 desc
+limit 5;
