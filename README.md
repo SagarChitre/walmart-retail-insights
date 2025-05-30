@@ -14,8 +14,8 @@ This project analyzes a dataset of 10,000+ Walmart sales transactions to uncover
 
 ### Technologies Used
 - **Database**: MySQL
-- **IDE**: MySQL Workbench
-- **Language**: SQL
+- **IDE**: MySQL Workbench, VSCode
+- **Language**: SQL, Python
 - **Analysis**: Advanced SQL functions, CTEs, Window functions
 
 ### Key SQL Techniques Demonstrated
