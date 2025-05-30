@@ -89,6 +89,8 @@ profit_margin float64
 
 3. After completing the previous step, use a sql editor (MySQL Workbench or Command Prompt) to execute the queries in 'Analysis.txt' file where every operation and it's business impact is explained.
 
+4. The 'requirements.txt' file includes the required python libraries.
+
 ## 📊 Business Impact
 
 This analysis provides actionable insights for:
