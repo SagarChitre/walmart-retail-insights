@@ -27,7 +27,7 @@ This project analyzes a dataset of 10,000+ Walmart sales transactions to uncover
 - CASE statements for conditional logic
 
 ### Dataset Schema
-'''
+```
 invoice_id int64
 Branch object
 City object
@@ -39,7 +39,7 @@ time object
 payment_method object
 rating float64
 profit_margin float64
-'''
+```
 
 ## 🎯 Business Problems Solved
 
